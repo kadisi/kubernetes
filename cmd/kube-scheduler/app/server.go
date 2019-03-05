@@ -306,6 +306,8 @@ func NewSchedulerConfig(s schedulerserverconfig.CompletedConfig) (*scheduler.Con
 		DisablePreemption:              s.ComponentConfig.DisablePreemption,
 		PercentageOfNodesToScore:       s.ComponentConfig.PercentageOfNodesToScore,
 		BindTimeoutSeconds:             *s.ComponentConfig.BindTimeoutSeconds,
+		WocloudIPamAddress:             s.WocloudIPamAddress,
+		ConfigMapInfomer:               s.InformerFactory.Core().V1().ConfigMaps(),
 	})
 
 	source := s.ComponentConfig.AlgorithmSource

@@ -47,6 +47,8 @@ type Config struct {
 
 	// LeaderElection is optional.
 	LeaderElection *leaderelection.LeaderElectionConfig
+
+	WocloudIPamAddress string
 }
 
 type completedConfig struct {

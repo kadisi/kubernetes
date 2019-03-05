@@ -20,6 +20,8 @@ package factory
 
 import (
 	"fmt"
+	"github.com/kadisi/ipam/api/services/ipams"
+	"google.golang.org/grpc"
 	"os"
 	"os/signal"
 	"reflect"
@@ -139,6 +141,9 @@ type configFactory struct {
 
 	// percentageOfNodesToScore specifies percentage of all nodes to score in each scheduling cycle.
 	percentageOfNodesToScore int32
+
+	wocloudIPamAddress string
+	configmapLister    corelisters.ConfigMapLister
 }
 
 // ConfigFactoryArgs is a set arguments passed to NewConfigFactory.
@@ -160,6 +165,9 @@ type ConfigFactoryArgs struct {
 	DisablePreemption              bool
 	PercentageOfNodesToScore       int32
 	BindTimeoutSeconds             int64
+
+	WocloudIPamAddress string
+	ConfigMapInfomer   coreinformers.ConfigMapInformer
 }
 
 // NewConfigFactory initializes the default implementation of a Configurator To encourage eventual privatization of the struct type, we only
@@ -192,9 +200,31 @@ func NewConfigFactory(args *ConfigFactoryArgs) scheduler.Configurator {
 		enableEquivalenceClassCache:    args.EnableEquivalenceClassCache,
 		disablePreemption:              args.DisablePreemption,
 		percentageOfNodesToScore:       args.PercentageOfNodesToScore,
+		wocloudIPamAddress:             args.WocloudIPamAddress,
+		configmapLister:                args.ConfigMapInfomer.Lister(),
 	}
 
 	c.scheduledPodsHasSynced = args.PodInformer.Informer().HasSynced
+
+	args.ConfigMapInfomer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: func(obj interface{}) bool {
+			switch t := obj.(type) {
+			case *v1.ConfigMap:
+				va, ok := t.GetAnnotations()[scheduler.AnnotationCMFloatingIP]
+				if !ok || va != scheduler.TrueStr {
+					return false
+				}
+				return true
+			}
+			return false
+		},
+		Handler: cache.ResourceEventHandlerFuncs{
+			AddFunc:    c.addConfigmapToCache,
+			UpdateFunc: c.updateConfigmapInCache,
+			DeleteFunc: c.deleteConfigmapFromCache,
+		},
+	})
+
 	// scheduled pod cache
 	args.PodInformer.Informer().AddEventHandler(
 		cache.FilteringResourceEventHandler{
@@ -702,6 +732,51 @@ func (c *configFactory) GetClient() clientset.Interface {
 // GetScheduledPodListerIndexer provides a pod lister, mostly internal use, but may also be called by mock-tests.
 func (c *configFactory) GetScheduledPodLister() corelisters.PodLister {
 	return c.scheduledPodLister
+}
+
+func (c *configFactory) addConfigmapToCache(obj interface{}) {
+	cm, ok := obj.(*v1.ConfigMap)
+	if !ok {
+		glog.Errorf("cannot convert to *v1.Configmap %v", obj)
+		return
+	}
+
+	if err := c.schedulerCache.AddConfigmap(cm); err != nil {
+		glog.Errorf("scheduler cache add configmap failed: %v", err)
+	}
+
+}
+
+func (c *configFactory) updateConfigmapInCache(oldobj, newobj interface{}) {
+	oldcm, ok := oldobj.(*v1.ConfigMap)
+	if !ok {
+		glog.Errorf("cannot convert to *v1.Configmap %v", oldobj)
+		return
+	}
+
+	newcm, ok := newobj.(*v1.ConfigMap)
+	if !ok {
+		glog.Errorf("cannot convert to *v1.Configmap %v", newobj)
+		return
+	}
+
+	if err := c.schedulerCache.UpdateConfigmap(oldcm, newcm); err != nil {
+		glog.Errorf("scheduler cache UpdateConfigmap failed: %v", err)
+		return
+	}
+
+}
+
+func (c *configFactory) deleteConfigmapFromCache(obj interface{}) {
+	cm, ok := obj.(*v1.ConfigMap)
+	if !ok {
+		glog.Errorf("cannot convert to *v1.Configmap %v", obj)
+		return
+	}
+
+	if err := c.schedulerCache.RemoveConfigmap(cm); err != nil {
+		glog.Errorf("scheduler cache remove configmap failed: %v", err)
+	}
 }
 
 func (c *configFactory) addPodToCache(obj interface{}) {
@@ -1252,6 +1327,18 @@ func (c *configFactory) CreateFromKeys(predicateKeys, priorityKeys sets.String, 
 		c.percentageOfNodesToScore,
 	)
 
+	con, err := grpc.Dial(c.wocloudIPamAddress, grpc.WithInsecure())
+	if err != nil {
+		glog.Errorf("create grpc connection error %v", err)
+		return nil, err
+	}
+
+	ipam := &scheduler.WoclouderClient{
+		IpamServiceClient: ipams.NewIpamServiceClient(con),
+		ConfigmapLister:   c.configmapLister,
+		Client:            c.GetClient(),
+	}
+
 	podBackoff := util.CreateDefaultPodBackoff()
 	return &scheduler.Config{
 		SchedulerCache: c.schedulerCache,
@@ -1272,6 +1359,7 @@ func (c *configFactory) CreateFromKeys(predicateKeys, priorityKeys sets.String, 
 		StopEverything:  c.StopEverything,
 		VolumeBinder:    c.volumeBinder,
 		SchedulingQueue: c.podQueue,
+		WocloudIPamer:   ipam,
 	}, nil
 }
 

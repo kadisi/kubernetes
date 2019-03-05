@@ -69,6 +69,8 @@ type Options struct {
 	WriteConfigTo string
 
 	Master string
+
+	Wocloud *WocloudOptions
 }
 
 // NewOptions returns default scheduler app options.
@@ -143,6 +145,8 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 
 	leaderelectionconfig.BindFlags(&o.ComponentConfig.LeaderElection.LeaderElectionConfiguration, fs)
 	utilfeature.DefaultFeatureGate.AddFlag(fs)
+
+	o.Wocloud.AddFlags(fs, &o.ComponentConfig)
 }
 
 // ApplyTo applies the scheduler options to the given scheduler app configuration.
@@ -232,6 +236,8 @@ func (o *Options) Config() (*schedulerappconfig.Config, error) {
 	c.Broadcaster = eventBroadcaster
 	c.LeaderElection = leaderElectionConfig
 
+	c.WocloudIPamAddress = o.Wocloud.IpamAddress
+	//client.CoreV1().Pods().Update()
 	return c, nil
 }
 

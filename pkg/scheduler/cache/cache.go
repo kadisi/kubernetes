@@ -63,6 +63,9 @@ type schedulerCache struct {
 	pdbs      map[string]*policy.PodDisruptionBudget
 	// A map from image name to its imageState.
 	imageStates map[string]*imageState
+
+	lockcm     sync.Mutex
+	configmaps map[string]*configMapInfo
 }
 
 type podState struct {
@@ -108,6 +111,7 @@ func newSchedulerCache(ttl, period time.Duration, stop <-chan struct{}) *schedul
 		podStates:   make(map[string]*podState),
 		pdbs:        make(map[string]*policy.PodDisruptionBudget),
 		imageStates: make(map[string]*imageState),
+		configmaps:  make(map[string]*configMapInfo),
 	}
 }
 
@@ -288,6 +292,60 @@ func (cache *schedulerCache) removePod(pod *v1.Pod) error {
 	if len(n.pods) == 0 && n.node == nil {
 		delete(cache.nodes, pod.Spec.NodeName)
 	}
+	return nil
+}
+
+func (cache *schedulerCache) AddConfigmap(cm *v1.ConfigMap) error {
+
+	key, err := getConfigmapKey(cm)
+	if err != nil {
+		return err
+	}
+	cache.lockcm.Lock()
+	defer cache.lockcm.Unlock()
+
+	info, ok := cache.configmaps[key]
+	if !ok {
+		cache.configmaps[key] = &configMapInfo{
+			configmap: cm,
+		}
+	} else {
+		info.configmap = cm
+	}
+
+	return nil
+}
+
+func (cache *schedulerCache) UpdateConfigmap(_, newcm *v1.ConfigMap) error {
+
+	key, err := getConfigmapKey(newcm)
+	if err != nil {
+		return err
+	}
+	cache.lockcm.Lock()
+	defer cache.lockcm.Unlock()
+
+	info, ok := cache.configmaps[key]
+	if !ok {
+		cache.configmaps[key] = &configMapInfo{
+			configmap: newcm,
+		}
+	} else {
+		info.configmap = newcm
+	}
+
+	return nil
+}
+
+func (cache *schedulerCache) RemoveConfigmap(cm *v1.ConfigMap) error {
+	key, err := getConfigmapKey(cm)
+	if err != nil {
+		return err
+	}
+	cache.lockcm.Lock()
+	defer cache.lockcm.Unlock()
+
+	delete(cache.configmaps, key)
 	return nil
 }
 

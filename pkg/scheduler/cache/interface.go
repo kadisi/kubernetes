@@ -128,6 +128,12 @@ type Cache interface {
 
 	// NodeTree returns a node tree structure
 	NodeTree() *NodeTree
+
+	AddConfigmap(cm *v1.ConfigMap) error
+
+	UpdateConfigmap(oldcm, newcm *v1.ConfigMap) error
+
+	RemoveConfigmap(cm *v1.ConfigMap) error
 }
 
 // Snapshot is a snapshot of cache state

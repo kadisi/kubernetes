@@ -151,6 +151,9 @@ type Config struct {
 
 	// SchedulingQueue holds pods to be scheduled
 	SchedulingQueue core.SchedulingQueue
+
+	// WocloudIPamer is wocloud-ipam request
+	WocloudIPamer Ipamer
 }
 
 // NewFromConfigurator returns a new scheduler that is created entirely by the Configurator.  Assumes Create() is implemented.
