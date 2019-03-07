@@ -1,0 +1,68 @@
+
+syntax = "proto3";
+
+package ipams;
+
+import weak "gogoproto/gogo.proto";
+
+  // The Ipam service definition.
+service IpamService {
+  // qcquire unused ip 
+  rpc AcquireIP(AcquireIPRequest) returns (AcquireIPReply) {}
+  rpc ListIpam(ListIpamRequest) returns (ListIpamReply) {}
+  rpc ListIPAllocation(ListIPAllocationRequest) returns (ListIPAllocationReply) {}
+}
+
+// The request message containing the namespace and configmap list.
+message AcquireIPRequest {
+  string podname = 1;
+  string namespace = 2;
+  repeated string configMaps = 3;
+}
+
+// The response message containing the greetings
+message AcquireIPReply {
+  IpamInfo ipaminfo = 1;
+}
+
+message IpamInfo {
+  string ip = 1;
+  string subnet = 2; 
+  string gateway = 3;
+  string configMap = 4;
+}
+
+message ListIpamRequest {
+
+}
+
+message ListIpamInfo {
+  string rangestart = 1;
+  string rangeend =2;
+  string subnet = 3;
+  string gateway = 4;
+  string namespace = 5;
+  string configmap = 6;
+}
+
+message ListIpamReply {
+  repeated  ListIpamInfo ipams = 1;
+}
+
+message ListIPAllocationRequest {
+  string namespace = 1;
+  string configmap = 2;
+}
+
+message ListIPAllocationInfo {
+  string ip = 1;
+  string subnet = 2;
+  string gateway = 3;
+  string podname = 4;
+}
+
+message ListIPAllocationReply {
+  repeated  ListIPAllocationInfo info = 1;
+}
+
+
