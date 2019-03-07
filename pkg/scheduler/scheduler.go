@@ -474,7 +474,13 @@ func (sched *Scheduler) scheduleOne() {
 			}
 		}
 
-		err := sched.bind(assumedPod, &v1.Binding{
+		err := sched.Config().WocloudIPamer.AssiginFloattingIP(assumedPod)
+		if err != nil {
+			glog.Errorf("assigin floatingip for pod [%v][%v] error %v", assumedPod.GetNamespace(),
+				assumedPod.GetName(), err)
+			return
+		}
+		err = sched.bind(assumedPod, &v1.Binding{
 			ObjectMeta: metav1.ObjectMeta{Namespace: assumedPod.Namespace, Name: assumedPod.Name, UID: assumedPod.UID},
 			Target: v1.ObjectReference{
 				Kind: "Node",
