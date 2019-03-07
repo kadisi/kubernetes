@@ -90,9 +90,6 @@ type KubeSchedulerConfiguration struct {
 	// Value must be non-negative integer. The value zero indicates no waiting.
 	// If this value is nil, the default value will be used.
 	BindTimeoutSeconds *int64
-
-	// WocloudIpamAddress is wocloud ipam address
-	WocloudIpamAddress string
 }
 
 // SchedulerAlgorithmSource is the source of a scheduler algorithm. One source

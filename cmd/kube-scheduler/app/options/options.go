@@ -104,6 +104,7 @@ func NewOptions() (*Options, error) {
 			UseLegacyPolicyConfig:    false,
 			PolicyConfigMapNamespace: metav1.NamespaceSystem,
 		},
+		Wocloud: new(WocloudOptions),
 	}
 
 	return o, nil
@@ -146,7 +147,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	leaderelectionconfig.BindFlags(&o.ComponentConfig.LeaderElection.LeaderElectionConfiguration, fs)
 	utilfeature.DefaultFeatureGate.AddFlag(fs)
 
-	o.Wocloud.AddFlags(fs, &o.ComponentConfig)
+	o.Wocloud.AddFlags(fs)
 }
 
 // ApplyTo applies the scheduler options to the given scheduler app configuration.

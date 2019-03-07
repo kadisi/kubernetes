@@ -15,19 +15,18 @@ package options
 
 import (
 	"github.com/spf13/pflag"
-	kubeschedulerconfig "k8s.io/kubernetes/pkg/scheduler/apis/config"
 )
 // WocloudOptions is wocloud options such as wocloud-ipam address
 type WocloudOptions struct {
 	IpamAddress string
 }
 
-func (o *WocloudOptions) AddFlags(fs *pflag.FlagSet,cfg *kubeschedulerconfig.KubeSchedulerConfiguration) {
+func (o *WocloudOptions) AddFlags(fs *pflag.FlagSet) {
 	if o == nil {
 		return
 	}
 
-	fs.StringVar(&o.IpamAddress, "ipam-address", cfg.WocloudIpamAddress,
+	fs.StringVar(&o.IpamAddress, "ipam-address", o.IpamAddress,
 		"wocloud ipam address, such as 127.0.0.1:9000")
 }
 
