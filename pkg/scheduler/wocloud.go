@@ -89,7 +89,7 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 	for _, v := range pod.Spec.Volumes {
 		if v.ConfigMap != nil {
 			if _, ok := cachemap[keyFunc(pod.GetNamespace(), v.ConfigMap.Name)]; ok {
-				glog.V(3).Info("find pod %v in ns %v Volumes has floatingip configmap %v ",
+				glog.V(3).Infof("find pod %v in ns %v Volumes has floatingip configmap %v ",
 					pod.GetName(), pod.GetNamespace(), v.ConfigMap.Name)
 				requestcms = append(requestcms, v.ConfigMap.Name)
 			}
@@ -105,7 +105,8 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 		ConfigMaps: requestcms,
 	})
 	if err != nil {
-		glog.Warningf("rpc client acquireip error %v", err)
+		glog.V(1).Infof("rpc client acquireip error %v", err)
+		return fmt.Errorf("rpc client acquireip error %v", err)
 	}
 
 	copypod := pod.DeepCopy()
