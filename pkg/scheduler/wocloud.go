@@ -83,8 +83,6 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 	cachemap := make(map[string]struct{})
 	for _, cm := range cachedcms {
 		cachemap[keyFunc(cm.GetNamespace(), cm.GetName())] = struct{}{}
-		glog.V(3).Infof("get cached floatingip configmap ns %v name %v",
-			cm.GetNamespace(), cm.GetName())
 	}
 
 	requestcms := make([]string, 0, 2)
