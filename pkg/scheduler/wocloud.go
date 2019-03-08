@@ -97,6 +97,10 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 			}
 		}
 	}
+	if len(requestcms) == 0 {
+		// Do nothing
+		return fmt.Errorf("can not find any configmap in pod[%s][%s].spec.volumes ", pod.GetNamespace(), pod.GetName())
+	}
 
 	ctx, cancle := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancle()

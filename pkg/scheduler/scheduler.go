@@ -17,6 +17,7 @@ limitations under the License.
 package scheduler
 
 import (
+	"fmt"
 	"time"
 
 	"k8s.io/api/core/v1"
@@ -458,14 +459,30 @@ func (sched *Scheduler) scheduleOne() {
 	if err != nil {
 		return
 	}
+
 	err = sched.Config().WocloudIPamer.AssiginFloattingIP(assumedPod)
 	if err != nil {
+
+		errormsg := fmt.Sprintf("assigin floatingip for pod [%v][%v] error ",
+			assumedPod.GetNamespace(),
+			assumedPod.GetName())
+
 		sched.config.Recorder.Eventf(pod, v1.EventTypeWarning, "FailedAssignFloatingip",
-			"assign floatingip for pod error ")
-		glog.V(3).Infof("assigin floatingip for pod [%v][%v] error %v", assumedPod.GetNamespace(),
-			assumedPod.GetName(), err)
+			errormsg)
+
+		glog.V(3).Infof("%s error %v", errormsg, err)
+
+		// must update status
+		sched.config.PodConditionUpdater.Update(pod, &v1.PodCondition{
+			Type:          v1.PodScheduled,
+			Status:        v1.ConditionFalse,
+			LastProbeTime: metav1.Now(),
+			Reason:        v1.PodReasonUnschedulable,
+			Message:       errormsg,
+		})
 		return
 	}
+
 	// assume modifies `assumedPod` by setting NodeName=suggestedHost
 	err = sched.assume(assumedPod, suggestedHost)
 	if err != nil {
