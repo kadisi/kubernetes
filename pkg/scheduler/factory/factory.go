@@ -20,12 +20,13 @@ package factory
 
 import (
 	"fmt"
-	"github.com/kadisi/ipam/api/services/ipams"
-	"google.golang.org/grpc"
 	"os"
 	"os/signal"
 	"reflect"
 	"time"
+
+	"github.com/kadisi/ipam/api/services/ipams"
+	"google.golang.org/grpc"
 
 	"github.com/golang/glog"
 
@@ -743,8 +744,10 @@ func (c *configFactory) addConfigmapToCache(obj interface{}) {
 
 	if err := c.schedulerCache.AddConfigmap(cm); err != nil {
 		glog.Errorf("scheduler cache add configmap failed: %v", err)
+		return
 	}
 
+	glog.V(3).Infof("add floatingip cm [%v][%v]", cm.GetNamespace(), cm.GetName())
 }
 
 func (c *configFactory) updateConfigmapInCache(oldobj, newobj interface{}) {
@@ -765,6 +768,7 @@ func (c *configFactory) updateConfigmapInCache(oldobj, newobj interface{}) {
 		return
 	}
 
+	glog.V(3).Infof("update floatingip cm[%v][%v]", newcm.GetNamespace(), newcm.GetName())
 }
 
 func (c *configFactory) deleteConfigmapFromCache(obj interface{}) {
@@ -776,7 +780,10 @@ func (c *configFactory) deleteConfigmapFromCache(obj interface{}) {
 
 	if err := c.schedulerCache.RemoveConfigmap(cm); err != nil {
 		glog.Errorf("scheduler cache remove configmap failed: %v", err)
+		return
 	}
+
+	glog.V(3).Infof("delete floatingip cm[%v][%v]", cm.GetNamespace(), cm.GetName())
 }
 
 func (c *configFactory) addPodToCache(obj interface{}) {

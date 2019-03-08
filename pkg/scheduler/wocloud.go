@@ -1,29 +1,30 @@
-/* 
+/*
 #  #############################################
 #  Copyright (c) 2019-2039 All rights reserved.
 #  #############################################
-# 
+#
 #  Name:  wocloud.go
 #  Date:  2019-02-21 15:44
 #  Author:   zhangjie
 #  Email:   iamzhangjie0619@163.com
-#  Desc:  
-# 
-*/ 
+#  Desc:
+#
+*/
 
 package scheduler
 
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/kadisi/ipam/api/services/ipams"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"time"
 
-	corelisters "k8s.io/client-go/listers/core/v1"
 	clientset "k8s.io/client-go/kubernetes"
+	corelisters "k8s.io/client-go/listers/core/v1"
 )
 
 const (
@@ -50,16 +51,16 @@ const (
 )
 
 type Ipamer interface {
-	AssiginFloattingIP(pod *v1.Pod)  error
+	AssiginFloattingIP(pod *v1.Pod) error
 }
 
 type WoclouderClient struct {
 	IpamServiceClient ipams.IpamServiceClient
-	ConfigmapLister corelisters.ConfigMapLister
-	Client  	clientset.Interface
+	ConfigmapLister   corelisters.ConfigMapLister
+	Client            clientset.Interface
 }
 
-func (c * WoclouderClient) AssiginFloattingIP(pod *v1.Pod)  error {
+func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 
 	need, ok := pod.GetAnnotations()[AnnotationPodNeedFloatingIP]
 	if !ok || need != TrueStr {
@@ -69,7 +70,8 @@ func (c * WoclouderClient) AssiginFloattingIP(pod *v1.Pod)  error {
 
 	cachedcms, err := c.ConfigmapLister.List(labels.Everything())
 	if err != nil {
-		glog.Warningf("can not find any config in cached")
+		glog.V(3).Info("can not find any configmap in cached")
+		return fmt.Errorf("can not find any configmap in cached")
 	}
 
 	keyFunc := func(ns, name string) string {
@@ -79,7 +81,7 @@ func (c * WoclouderClient) AssiginFloattingIP(pod *v1.Pod)  error {
 	cachemap := make(map[string]struct{})
 	for _, cm := range cachedcms {
 		cachemap[keyFunc(cm.GetNamespace(), cm.GetName())] = struct{}{}
-		glog.Infof("get cached floatingip configmap ns %v name %v",
+		glog.V(3).Infof("get cached floatingip configmap ns %v name %v",
 			cm.GetNamespace(), cm.GetName())
 	}
 
@@ -87,19 +89,19 @@ func (c * WoclouderClient) AssiginFloattingIP(pod *v1.Pod)  error {
 	for _, v := range pod.Spec.Volumes {
 		if v.ConfigMap != nil {
 			if _, ok := cachemap[keyFunc(pod.GetNamespace(), v.ConfigMap.Name)]; ok {
-				glog.Info("find pod %v in ns %v Volumes has floatingip configmap %v ",
+				glog.V(3).Info("find pod %v in ns %v Volumes has floatingip configmap %v ",
 					pod.GetName(), pod.GetNamespace(), v.ConfigMap.Name)
 				requestcms = append(requestcms, v.ConfigMap.Name)
 			}
 		}
 	}
 
-	ctx, cancle := context.WithTimeout(context.Background(), time.Second * 5)
+	ctx, cancle := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancle()
 
 	respon, err := c.IpamServiceClient.AcquireIP(ctx, &ipams.AcquireIPRequest{
-		Podname: pod.GetName(),
-		Namespace: pod.GetNamespace(),
+		Podname:    pod.GetName(),
+		Namespace:  pod.GetNamespace(),
 		ConfigMaps: requestcms,
 	})
 	if err != nil {
@@ -117,10 +119,9 @@ func (c * WoclouderClient) AssiginFloattingIP(pod *v1.Pod)  error {
 
 	_, err = c.Client.CoreV1().Pods(pod.GetNamespace()).Update(copypod)
 	if err != nil {
-		glog.Warningf("update pod annotation for floatingip error %v", err)
+		glog.V(3).Infof("update pod annotation for floatingip error %v", err)
 		return err
 	}
 
 	return nil
 }
-
