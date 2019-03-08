@@ -448,18 +448,6 @@ func (sched *Scheduler) scheduleOne() {
 	// This allows us to keep scheduling without waiting on binding to occur.
 	assumedPod := pod.DeepCopy()
 
-	// Assume volumes first before assuming the pod.
-	//
-	// If all volumes are completely bound, then allBound is true and binding will be skipped.
-	//
-	// Otherwise, binding of volumes is started after the pod is assumed, but before pod binding.
-	//
-	// This function modifies 'assumedPod' if volume binding is required.
-	allBound, err := sched.assumeVolumes(assumedPod, suggestedHost)
-	if err != nil {
-		return
-	}
-
 	err = sched.Config().WocloudIPamer.AssiginFloattingIP(assumedPod)
 	if err != nil {
 
@@ -480,6 +468,18 @@ func (sched *Scheduler) scheduleOne() {
 			Reason:        v1.PodReasonUnschedulable,
 			Message:       errormsg,
 		})
+		return
+	}
+
+	// Assume volumes first before assuming the pod.
+	//
+	// If all volumes are completely bound, then allBound is true and binding will be skipped.
+	//
+	// Otherwise, binding of volumes is started after the pod is assumed, but before pod binding.
+	//
+	// This function modifies 'assumedPod' if volume binding is required.
+	allBound, err := sched.assumeVolumes(assumedPod, suggestedHost)
+	if err != nil {
 		return
 	}
 
