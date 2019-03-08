@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/apimachinery/pkg/types"
+
 	"github.com/golang/glog"
 	"github.com/kadisi/ipam/api/services/ipams"
 	"k8s.io/api/core/v1"
@@ -109,18 +111,18 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 		return fmt.Errorf("rpc client acquireip error %v", err)
 	}
 
-	copypod := pod.DeepCopy()
-	if copypod.Annotations == nil {
-		copypod.Annotations = make(map[string]string)
+	addAnnotationPatch := func(ip, subnet, gw, cm string) []byte {
+		return []byte(fmt.Sprintf(`{"metadata":{"annotations":{"%s":"%s","%s":"%s","%s":"%s","%s":"%s"}}}`,
+			AnnotationPodFloatingIP, ip,
+			AnnotationPodSubnet, subnet,
+			AnnotationPodGateway, gw,
+			AnnotationPodConfigMap, cm))
 	}
-	copypod.Annotations[AnnotationPodFloatingIP] = respon.Ipaminfo.Ip
-	copypod.Annotations[AnnotationPodSubnet] = respon.Ipaminfo.Subnet
-	copypod.Annotations[AnnotationPodGateway] = respon.Ipaminfo.Gateway
-	copypod.Annotations[AnnotationPodConfigMap] = respon.Ipaminfo.ConfigMap
 
-	_, err = c.Client.CoreV1().Pods(pod.GetNamespace()).Update(copypod)
+	_, err = c.Client.CoreV1().Pods(pod.GetNamespace()).Patch(pod.Name, types.MergePatchType, addAnnotationPatch(
+		respon.Ipaminfo.Ip, respon.Ipaminfo.Subnet, respon.Ipaminfo.Gateway, respon.Ipaminfo.ConfigMap))
 	if err != nil {
-		glog.V(3).Infof("update pod annotation for floatingip error %v", err)
+		glog.V(3).Infof("patch pod annotation for floatingip error %v", err)
 		return err
 	}
 
