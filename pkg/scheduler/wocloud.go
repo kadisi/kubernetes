@@ -18,10 +18,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/kadisi/ipam/api/services/ipams"
+	ipamtypes "github.com/kadisi/ipam/pkg/types"
+
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/golang/glog"
-	"github.com/kadisi/ipam/api/services/ipams"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -31,25 +33,25 @@ import (
 
 const (
 	// AnnotationCMFloatingIP is in configmap annotation
-	AnnotationCMFloatingIP = "wocloud.cn/floatingip"
+	AnnotationCMFloatingIP = ipamtypes.AnnotationCMFloatingIP
 
 	// ConfigMapFloatingIPKey is in configmap data key
-	ConfigMapFloatingIPKey = "ipam"
+	ConfigMapFloatingIPKey = ipamtypes.ConfigMapFloatingIPKey
 
 	// TrueStr is true string
-	TrueStr = "true"
+	TrueStr = ipamtypes.TrueStr
 
 	// stand this pod need Floatingip
 	AnnotationPodNeedFloatingIP = "wocloud.cn/floatingip"
 
 	// AnnotationPodFloatingIP is in pod annotation
-	AnnotationPodFloatingIP = "wocloud.cn/floating-ip"
+	AnnotationPodFloatingIP = ipamtypes.AnnotationPodFloatingIP
 	// AnnotationPodSubnet is in pod annotation
-	AnnotationPodSubnet = "wocloud.cn/floating-subnet"
+	AnnotationPodSubnet = ipamtypes.AnnotationPodSubnet
 	// AnnotationPodGateway is in pod annotation
-	AnnotationPodGateway = "wocloud.cn/floating-gateway"
+	AnnotationPodGateway = ipamtypes.AnnotationPodGateway
 	// AnnotationPodConfigMap is in pod annotation
-	AnnotationPodConfigMap = "wocloud.cn/floating-configmap"
+	AnnotationPodConfigMap = ipamtypes.AnnotationPodConfigMap
 )
 
 type Ipamer interface {

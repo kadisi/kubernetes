@@ -22,8 +22,13 @@
 		},
 		{
 			"ImportPath": "github.com/kadisi/ipam/api/services/ipams",
-			"Comment": "change vendor",
-			"Rev": "7ff23fa12c5b0f90f1068823611aec6f1a3f502c"
+			"Comment": "New comment",
+			"Rev": "94e159aae2fd51b646f502d994c40d19553004c5"
+		},
+		{
+			"ImportPath": "github.com/kadisi/ipam/pkg/types",
+			"Comment": "New comment",
+			"Rev": "94e159aae2fd51b646f502d994c40d19553004c5"
 		},
 		{
 			"ImportPath": "bitbucket.org/ww/goautoneg",
