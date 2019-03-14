@@ -451,9 +451,10 @@ func (sched *Scheduler) scheduleOne() {
 	err = sched.Config().WocloudIPamer.AssiginFloattingIP(assumedPod)
 	if err != nil {
 
-		errormsg := fmt.Sprintf("assigin floatingip for pod [%v][%v] error",
+		errormsg := fmt.Sprintf("assigin floatingip for pod [%v][%v] error %v",
 			assumedPod.GetNamespace(),
-			assumedPod.GetName())
+			assumedPod.GetName(),
+			err)
 
 		sched.config.Error(assumedPod, err)
 		sched.config.Recorder.Eventf(pod, v1.EventTypeWarning, "FailedAssignFloatingip",
