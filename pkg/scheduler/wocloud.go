@@ -121,25 +121,25 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 	}
 
 	type Metadata struct {
-		annotations map[string]string `json:"annotations"`
+		Annotations map[string]string `json:"annotations"`
 	}
 
 	type Merge struct {
-		metadata Metadata `json:"metadata"`
+		Metadata Metadata `json:"metadata"`
 	}
 
 	addAnnotationPatch := func(ip, subnet, gw, cm, vlan, routes string) ([]byte, error) {
 
-		annotation := make(map[string]string)
-		annotation[AnnotationPodFloatingIP] = ip
-		annotation[AnnotationPodSubnet] = subnet
-		annotation[AnnotationPodGateway] = gw
-		annotation[AnnotationPodConfigMap] = cm
-		annotation[AnnotationPodVlan] = vlan
-		annotation[AnnotationPodRoutes] = routes
+		anno := make(map[string]string)
+		anno[AnnotationPodFloatingIP] = ip
+		anno[AnnotationPodSubnet] = subnet
+		anno[AnnotationPodGateway] = gw
+		anno[AnnotationPodConfigMap] = cm
+		anno[AnnotationPodVlan] = vlan
+		anno[AnnotationPodRoutes] = routes
 
 		mergepod := &Merge{
-			metadata: Metadata{annotations: annotation},
+			Metadata: Metadata{Annotations: anno},
 		}
 
 		return json.Marshal(mergepod)
