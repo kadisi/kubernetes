@@ -120,23 +120,44 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 		return fmt.Errorf("rpc client acquireip error %v", err)
 	}
 
-	addAnnotationPatch := func(ip, subnet, gw, cm, vlan, routes string) []byte {
-		return []byte(fmt.Sprintf(`{"metadata":{"annotations":{"%s":"%s","%s":"%s","%s":"%s","%s":"%s","%s":"%s", "%s":"%s"}}}`,
-			AnnotationPodFloatingIP, ip,
-			AnnotationPodSubnet, subnet,
-			AnnotationPodGateway, gw,
-			AnnotationPodConfigMap, cm,
-			AnnotationPodVlan, vlan,
-			AnnotationPodRoutes, routes))
+	addAnnotationPatch := func(ip, subnet, gw, cm, vlan, routes string) ([]byte, error) {
+
+		type Metadata struct {
+			annotations map[string]string `json:"annotations"`
+		}
+		type mergedata struct {
+			metadata Metadata `json:"metadata"`
+		}
+		annotation := make(map[string]string)
+
+		annotation[AnnotationPodFloatingIP] = ip
+		annotation[AnnotationPodSubnet] = subnet
+		annotation[AnnotationPodGateway] = gw
+		annotation[AnnotationPodConfigMap] = cm
+		annotation[AnnotationPodVlan] = vlan
+		annotation[AnnotationPodRoutes] = routes
+
+		mergepod := &mergedata{
+			metadata: Metadata{annotations: annotation},
+		}
+
+		return json.Marshal(mergepod)
 	}
 	routes, err := json.Marshal(respon.Ipaminfo.Routes)
 	if err != nil {
+		glog.V(1).Infof("json marshal error %v", err)
 		return err
 	}
-	_, err = c.Client.CoreV1().Pods(pod.GetNamespace()).Patch(pod.Name, types.MergePatchType, addAnnotationPatch(
-		respon.Ipaminfo.Ip, respon.Ipaminfo.Subnet, respon.Ipaminfo.Gateway, respon.Ipaminfo.ConfigMap, respon.Ipaminfo.Vlan, string(routes)))
+	mergeannotation, err := addAnnotationPatch(
+		respon.Ipaminfo.Ip, respon.Ipaminfo.Subnet, respon.Ipaminfo.Gateway, respon.Ipaminfo.ConfigMap,
+		respon.Ipaminfo.Vlan, string(routes))
 	if err != nil {
-		glog.V(3).Infof("patch pod annotation for floatingip error %v", err)
+		glog.V(3).Infof("marshal annotation error %v", err)
+		return err
+	}
+	_, err = c.Client.CoreV1().Pods(pod.GetNamespace()).Patch(pod.Name, types.MergePatchType, mergeannotation)
+	if err != nil {
+		glog.V(3).Infof("patch pod annotation for floatingip error %v mergeannotation %v", err, string(mergeannotation))
 		return err
 	}
 
