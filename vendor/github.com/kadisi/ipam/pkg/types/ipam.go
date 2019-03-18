@@ -19,6 +19,9 @@ const (
 
 	// TrueStr is true string
 	TrueStr = "true"
+
+	// NOVlanStr is no vlan flag string
+	NOVlanStr = "-1"
 )
 
 // IPNet is net.IPNet
@@ -109,6 +112,13 @@ type Range struct {
 	RangeEnd   net.IP `json:"rangeEnd,omitempty"`   // The last ip, inclusive
 	Subnet     IPNet  `json:"subnet"`
 	Gateway    net.IP `json:"gateway,omitempty"`
+	Vlan       string `json:"vlan,omitempty"`
+}
+
+// Route is route for ipallocation and ipam
+type Route struct {
+	Dst IPNet  `json:"dst"`
+	Gw  net.IP `json:"gw"`
 }
 
 // TODO need add route struct
@@ -116,9 +126,10 @@ type Range struct {
 
 // Ipam  is
 type Ipam struct {
-	Range     *Range `json:"range,omitempty"`
-	Namespace string `json:"namespace,omitempty"`
-	CMName    string `json:"cnname,omitempty"`
+	Range     *Range   `json:"range,omitempty"`
+	Routes    []*Route `json:"routes,omitempty"`
+	Namespace string   `json:"namespace,omitempty"`
+	CMName    string   `json:"cnname,omitempty"`
 }
 
 // NewIpam create new Ipam obj by V1.ConfigMap
@@ -145,6 +156,13 @@ func NewIpam(cm *v1.ConfigMap, opts ...IpamField) (*Ipam, bool) {
 	}
 	WithIpamFields(ipam, opts...)
 
+	if ipam.Range == nil {
+		ipam.Range = new(Range)
+	}
+
+	if ipam.Range.Vlan == "" {
+		ipam.Range.Vlan = NOVlanStr
+	}
 	return ipam, true
 
 }
@@ -177,6 +195,13 @@ func WithIpamCMName(cm string) IpamField {
 func WithIpamRange(r *Range) IpamField {
 	return func(ipam *Ipam) {
 		ipam.Range = r
+	}
+}
+
+// WithIpamRoutes set routes field
+func WithIpamRoutes(routes []*Route) IpamField {
+	return func(ipam *Ipam) {
+		ipam.Routes = routes
 	}
 }
 

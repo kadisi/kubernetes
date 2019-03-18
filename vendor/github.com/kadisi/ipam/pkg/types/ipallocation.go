@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"sync"
@@ -19,16 +20,23 @@ const (
 	AnnotationPodGateway = "wocloud.cn/floating-gateway"
 	// AnnotationPodConfigMap is in pod annotation
 	AnnotationPodConfigMap = "wocloud.cn/floating-configmap"
+	// AnnotationPodVlan is in pod annotation
+	AnnotationPodVlan = "wocloud.cn/floating-vlan"
+
+	// AnnotationPodRoutes is in pod annotation
+	AnnotationPodRoutes = "wocloud.cn/floating-routes"
 )
 
 // IPAllocation stand allocation ips
 type IPAllocation struct {
-	IP        net.IP `json:"Ip,omitempty"`
-	Subnet    IPNet  `json:"subnet"`
-	Gateway   net.IP `json:"gateway,omitempty"`
-	Namespace string `json:"namespace"`
-	CMName    string `json:"cmname"`
-	PodName   string `json:"podname"`
+	IP        net.IP   `json:"Ip,omitempty"`
+	Subnet    IPNet    `json:"subnet"`
+	Gateway   net.IP   `json:"gateway,omitempty"`
+	Namespace string   `json:"namespace"`
+	CMName    string   `json:"cmname"`
+	PodName   string   `json:"podname"`
+	Vlan      string   `json:"vlan"`
+	Routes    []*Route `json:"routes"`
 }
 
 // GetKey is get ipallocation key return string
@@ -92,6 +100,20 @@ func WithIPAllocationPodName(pname string) IPAllocationField {
 	}
 }
 
+// WithIPAllocationVlan set vlan field
+func WithIPAllocationVlan(vlan string) IPAllocationField {
+	return func(allocation *IPAllocation) {
+		allocation.Vlan = vlan
+	}
+}
+
+// WithIPAllocationRoutes set vlan field
+func WithIPAllocationRoutes(routes []*Route) IPAllocationField {
+	return func(allocation *IPAllocation) {
+		allocation.Routes = routes
+	}
+}
+
 // NewIPAllocation create new IPAllocation
 func NewIPAllocation(p *v1.Pod,
 	options ...IPAllocationField) (*IPAllocation, bool) {
@@ -118,9 +140,22 @@ func NewIPAllocation(p *v1.Pod,
 			return nil, false
 		}
 
+		vlan, ok := p.GetAnnotations()[AnnotationPodVlan]
+		if !ok {
+			vlan = NOVlanStr
+		}
+
 		sub, err := ParseCIDR(subnet)
 		if err != nil {
 			return nil, false
+		}
+		routes := make([]*Route, 0, 3)
+		routesStr, ok := p.GetAnnotations()[AnnotationPodRoutes]
+		if ok {
+			err := json.Unmarshal([]byte(routesStr), &routes)
+			if err != nil {
+				return nil, false
+			}
 		}
 
 		options = append(options, WithIPAllocationPodName(p.GetName()),
@@ -129,6 +164,8 @@ func NewIPAllocation(p *v1.Pod,
 			WithIPAllocationGateway(net.ParseIP(gateway).To4()),
 			WithIPAllocationIP(net.ParseIP(floatingip).To4()),
 			WithIPAllocationSubnet(IPNet{*sub}),
+			WithIPAllocationVlan(vlan),
+			WithIPAllocationRoutes(routes),
 		)
 	}
 

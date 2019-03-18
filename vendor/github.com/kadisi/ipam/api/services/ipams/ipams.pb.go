@@ -11,6 +11,7 @@
 	It has these top-level messages:
 		AcquireIPRequest
 		AcquireIPReply
+		Route
 		IpamInfo
 		ListIpamRequest
 		ListIpamInfo
@@ -68,36 +69,49 @@ func (m *AcquireIPReply) Reset()                    { *m = AcquireIPReply{} }
 func (*AcquireIPReply) ProtoMessage()               {}
 func (*AcquireIPReply) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{1} }
 
+type Route struct {
+	Dst string `protobuf:"bytes,1,opt,name=dst,proto3" json:"dst,omitempty"`
+	Gw  string `protobuf:"bytes,2,opt,name=gw,proto3" json:"gw,omitempty"`
+}
+
+func (m *Route) Reset()                    { *m = Route{} }
+func (*Route) ProtoMessage()               {}
+func (*Route) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{2} }
+
 type IpamInfo struct {
-	Ip        string `protobuf:"bytes,1,opt,name=ip,proto3" json:"ip,omitempty"`
-	Subnet    string `protobuf:"bytes,2,opt,name=subnet,proto3" json:"subnet,omitempty"`
-	Gateway   string `protobuf:"bytes,3,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	ConfigMap string `protobuf:"bytes,4,opt,name=configMap,proto3" json:"configMap,omitempty"`
+	Ip        string   `protobuf:"bytes,1,opt,name=ip,proto3" json:"ip,omitempty"`
+	Subnet    string   `protobuf:"bytes,2,opt,name=subnet,proto3" json:"subnet,omitempty"`
+	Gateway   string   `protobuf:"bytes,3,opt,name=gateway,proto3" json:"gateway,omitempty"`
+	ConfigMap string   `protobuf:"bytes,4,opt,name=configMap,proto3" json:"configMap,omitempty"`
+	Vlan      string   `protobuf:"bytes,5,opt,name=vlan,proto3" json:"vlan,omitempty"`
+	Routes    []*Route `protobuf:"bytes,6,rep,name=routes" json:"routes,omitempty"`
 }
 
 func (m *IpamInfo) Reset()                    { *m = IpamInfo{} }
 func (*IpamInfo) ProtoMessage()               {}
-func (*IpamInfo) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{2} }
+func (*IpamInfo) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{3} }
 
 type ListIpamRequest struct {
 }
 
 func (m *ListIpamRequest) Reset()                    { *m = ListIpamRequest{} }
 func (*ListIpamRequest) ProtoMessage()               {}
-func (*ListIpamRequest) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{3} }
+func (*ListIpamRequest) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{4} }
 
 type ListIpamInfo struct {
-	Rangestart string `protobuf:"bytes,1,opt,name=rangestart,proto3" json:"rangestart,omitempty"`
-	Rangeend   string `protobuf:"bytes,2,opt,name=rangeend,proto3" json:"rangeend,omitempty"`
-	Subnet     string `protobuf:"bytes,3,opt,name=subnet,proto3" json:"subnet,omitempty"`
-	Gateway    string `protobuf:"bytes,4,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	Namespace  string `protobuf:"bytes,5,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Configmap  string `protobuf:"bytes,6,opt,name=configmap,proto3" json:"configmap,omitempty"`
+	Rangestart string   `protobuf:"bytes,1,opt,name=rangestart,proto3" json:"rangestart,omitempty"`
+	Rangeend   string   `protobuf:"bytes,2,opt,name=rangeend,proto3" json:"rangeend,omitempty"`
+	Subnet     string   `protobuf:"bytes,3,opt,name=subnet,proto3" json:"subnet,omitempty"`
+	Gateway    string   `protobuf:"bytes,4,opt,name=gateway,proto3" json:"gateway,omitempty"`
+	Namespace  string   `protobuf:"bytes,5,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Configmap  string   `protobuf:"bytes,6,opt,name=configmap,proto3" json:"configmap,omitempty"`
+	Vlan       string   `protobuf:"bytes,7,opt,name=vlan,proto3" json:"vlan,omitempty"`
+	Routes     []*Route `protobuf:"bytes,8,rep,name=routes" json:"routes,omitempty"`
 }
 
 func (m *ListIpamInfo) Reset()                    { *m = ListIpamInfo{} }
 func (*ListIpamInfo) ProtoMessage()               {}
-func (*ListIpamInfo) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{4} }
+func (*ListIpamInfo) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{5} }
 
 type ListIpamReply struct {
 	Ipams []*ListIpamInfo `protobuf:"bytes,1,rep,name=ipams" json:"ipams,omitempty"`
@@ -105,7 +119,7 @@ type ListIpamReply struct {
 
 func (m *ListIpamReply) Reset()                    { *m = ListIpamReply{} }
 func (*ListIpamReply) ProtoMessage()               {}
-func (*ListIpamReply) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{5} }
+func (*ListIpamReply) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{6} }
 
 type ListIPAllocationRequest struct {
 	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
@@ -114,18 +128,20 @@ type ListIPAllocationRequest struct {
 
 func (m *ListIPAllocationRequest) Reset()                    { *m = ListIPAllocationRequest{} }
 func (*ListIPAllocationRequest) ProtoMessage()               {}
-func (*ListIPAllocationRequest) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{6} }
+func (*ListIPAllocationRequest) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{7} }
 
 type ListIPAllocationInfo struct {
-	Ip      string `protobuf:"bytes,1,opt,name=ip,proto3" json:"ip,omitempty"`
-	Subnet  string `protobuf:"bytes,2,opt,name=subnet,proto3" json:"subnet,omitempty"`
-	Gateway string `protobuf:"bytes,3,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	Podname string `protobuf:"bytes,4,opt,name=podname,proto3" json:"podname,omitempty"`
+	Ip      string   `protobuf:"bytes,1,opt,name=ip,proto3" json:"ip,omitempty"`
+	Subnet  string   `protobuf:"bytes,2,opt,name=subnet,proto3" json:"subnet,omitempty"`
+	Gateway string   `protobuf:"bytes,3,opt,name=gateway,proto3" json:"gateway,omitempty"`
+	Podname string   `protobuf:"bytes,4,opt,name=podname,proto3" json:"podname,omitempty"`
+	Vlan    string   `protobuf:"bytes,5,opt,name=vlan,proto3" json:"vlan,omitempty"`
+	Routes  []*Route `protobuf:"bytes,6,rep,name=routes" json:"routes,omitempty"`
 }
 
 func (m *ListIPAllocationInfo) Reset()                    { *m = ListIPAllocationInfo{} }
 func (*ListIPAllocationInfo) ProtoMessage()               {}
-func (*ListIPAllocationInfo) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{7} }
+func (*ListIPAllocationInfo) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{8} }
 
 type ListIPAllocationReply struct {
 	Info []*ListIPAllocationInfo `protobuf:"bytes,1,rep,name=info" json:"info,omitempty"`
@@ -133,11 +149,12 @@ type ListIPAllocationReply struct {
 
 func (m *ListIPAllocationReply) Reset()                    { *m = ListIPAllocationReply{} }
 func (*ListIPAllocationReply) ProtoMessage()               {}
-func (*ListIPAllocationReply) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{8} }
+func (*ListIPAllocationReply) Descriptor() ([]byte, []int) { return fileDescriptorIpams, []int{9} }
 
 func init() {
 	proto.RegisterType((*AcquireIPRequest)(nil), "ipams.AcquireIPRequest")
 	proto.RegisterType((*AcquireIPReply)(nil), "ipams.AcquireIPReply")
+	proto.RegisterType((*Route)(nil), "ipams.Route")
 	proto.RegisterType((*IpamInfo)(nil), "ipams.IpamInfo")
 	proto.RegisterType((*ListIpamRequest)(nil), "ipams.ListIpamRequest")
 	proto.RegisterType((*ListIpamInfo)(nil), "ipams.ListIpamInfo")
@@ -360,6 +377,36 @@ func (m *AcquireIPReply) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 
+func (m *Route) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Route) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if len(m.Dst) > 0 {
+		dAtA[i] = 0xa
+		i++
+		i = encodeVarintIpams(dAtA, i, uint64(len(m.Dst)))
+		i += copy(dAtA[i:], m.Dst)
+	}
+	if len(m.Gw) > 0 {
+		dAtA[i] = 0x12
+		i++
+		i = encodeVarintIpams(dAtA, i, uint64(len(m.Gw)))
+		i += copy(dAtA[i:], m.Gw)
+	}
+	return i, nil
+}
+
 func (m *IpamInfo) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -398,6 +445,24 @@ func (m *IpamInfo) MarshalTo(dAtA []byte) (int, error) {
 		i++
 		i = encodeVarintIpams(dAtA, i, uint64(len(m.ConfigMap)))
 		i += copy(dAtA[i:], m.ConfigMap)
+	}
+	if len(m.Vlan) > 0 {
+		dAtA[i] = 0x2a
+		i++
+		i = encodeVarintIpams(dAtA, i, uint64(len(m.Vlan)))
+		i += copy(dAtA[i:], m.Vlan)
+	}
+	if len(m.Routes) > 0 {
+		for _, msg := range m.Routes {
+			dAtA[i] = 0x32
+			i++
+			i = encodeVarintIpams(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
 	}
 	return i, nil
 }
@@ -470,6 +535,24 @@ func (m *ListIpamInfo) MarshalTo(dAtA []byte) (int, error) {
 		i++
 		i = encodeVarintIpams(dAtA, i, uint64(len(m.Configmap)))
 		i += copy(dAtA[i:], m.Configmap)
+	}
+	if len(m.Vlan) > 0 {
+		dAtA[i] = 0x3a
+		i++
+		i = encodeVarintIpams(dAtA, i, uint64(len(m.Vlan)))
+		i += copy(dAtA[i:], m.Vlan)
+	}
+	if len(m.Routes) > 0 {
+		for _, msg := range m.Routes {
+			dAtA[i] = 0x42
+			i++
+			i = encodeVarintIpams(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
 	}
 	return i, nil
 }
@@ -573,6 +656,24 @@ func (m *ListIPAllocationInfo) MarshalTo(dAtA []byte) (int, error) {
 		i = encodeVarintIpams(dAtA, i, uint64(len(m.Podname)))
 		i += copy(dAtA[i:], m.Podname)
 	}
+	if len(m.Vlan) > 0 {
+		dAtA[i] = 0x2a
+		i++
+		i = encodeVarintIpams(dAtA, i, uint64(len(m.Vlan)))
+		i += copy(dAtA[i:], m.Vlan)
+	}
+	if len(m.Routes) > 0 {
+		for _, msg := range m.Routes {
+			dAtA[i] = 0x32
+			i++
+			i = encodeVarintIpams(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
+	}
 	return i, nil
 }
 
@@ -663,6 +764,20 @@ func (m *AcquireIPReply) Size() (n int) {
 	return n
 }
 
+func (m *Route) Size() (n int) {
+	var l int
+	_ = l
+	l = len(m.Dst)
+	if l > 0 {
+		n += 1 + l + sovIpams(uint64(l))
+	}
+	l = len(m.Gw)
+	if l > 0 {
+		n += 1 + l + sovIpams(uint64(l))
+	}
+	return n
+}
+
 func (m *IpamInfo) Size() (n int) {
 	var l int
 	_ = l
@@ -681,6 +796,16 @@ func (m *IpamInfo) Size() (n int) {
 	l = len(m.ConfigMap)
 	if l > 0 {
 		n += 1 + l + sovIpams(uint64(l))
+	}
+	l = len(m.Vlan)
+	if l > 0 {
+		n += 1 + l + sovIpams(uint64(l))
+	}
+	if len(m.Routes) > 0 {
+		for _, e := range m.Routes {
+			l = e.Size()
+			n += 1 + l + sovIpams(uint64(l))
+		}
 	}
 	return n
 }
@@ -717,6 +842,16 @@ func (m *ListIpamInfo) Size() (n int) {
 	l = len(m.Configmap)
 	if l > 0 {
 		n += 1 + l + sovIpams(uint64(l))
+	}
+	l = len(m.Vlan)
+	if l > 0 {
+		n += 1 + l + sovIpams(uint64(l))
+	}
+	if len(m.Routes) > 0 {
+		for _, e := range m.Routes {
+			l = e.Size()
+			n += 1 + l + sovIpams(uint64(l))
+		}
 	}
 	return n
 }
@@ -765,6 +900,16 @@ func (m *ListIPAllocationInfo) Size() (n int) {
 	l = len(m.Podname)
 	if l > 0 {
 		n += 1 + l + sovIpams(uint64(l))
+	}
+	l = len(m.Vlan)
+	if l > 0 {
+		n += 1 + l + sovIpams(uint64(l))
+	}
+	if len(m.Routes) > 0 {
+		for _, e := range m.Routes {
+			l = e.Size()
+			n += 1 + l + sovIpams(uint64(l))
+		}
 	}
 	return n
 }
@@ -816,6 +961,17 @@ func (this *AcquireIPReply) String() string {
 	}, "")
 	return s
 }
+func (this *Route) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&Route{`,
+		`Dst:` + fmt.Sprintf("%v", this.Dst) + `,`,
+		`Gw:` + fmt.Sprintf("%v", this.Gw) + `,`,
+		`}`,
+	}, "")
+	return s
+}
 func (this *IpamInfo) String() string {
 	if this == nil {
 		return "nil"
@@ -825,6 +981,8 @@ func (this *IpamInfo) String() string {
 		`Subnet:` + fmt.Sprintf("%v", this.Subnet) + `,`,
 		`Gateway:` + fmt.Sprintf("%v", this.Gateway) + `,`,
 		`ConfigMap:` + fmt.Sprintf("%v", this.ConfigMap) + `,`,
+		`Vlan:` + fmt.Sprintf("%v", this.Vlan) + `,`,
+		`Routes:` + strings.Replace(fmt.Sprintf("%v", this.Routes), "Route", "Route", 1) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -849,6 +1007,8 @@ func (this *ListIpamInfo) String() string {
 		`Gateway:` + fmt.Sprintf("%v", this.Gateway) + `,`,
 		`Namespace:` + fmt.Sprintf("%v", this.Namespace) + `,`,
 		`Configmap:` + fmt.Sprintf("%v", this.Configmap) + `,`,
+		`Vlan:` + fmt.Sprintf("%v", this.Vlan) + `,`,
+		`Routes:` + strings.Replace(fmt.Sprintf("%v", this.Routes), "Route", "Route", 1) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -883,6 +1043,8 @@ func (this *ListIPAllocationInfo) String() string {
 		`Subnet:` + fmt.Sprintf("%v", this.Subnet) + `,`,
 		`Gateway:` + fmt.Sprintf("%v", this.Gateway) + `,`,
 		`Podname:` + fmt.Sprintf("%v", this.Podname) + `,`,
+		`Vlan:` + fmt.Sprintf("%v", this.Vlan) + `,`,
+		`Routes:` + strings.Replace(fmt.Sprintf("%v", this.Routes), "Route", "Route", 1) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -1125,6 +1287,114 @@ func (m *AcquireIPReply) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *Route) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowIpams
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Route: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Route: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Dst", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIpams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIpams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Dst = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Gw", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIpams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIpams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Gw = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipIpams(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthIpams
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *IpamInfo) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1269,6 +1539,66 @@ func (m *IpamInfo) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.ConfigMap = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Vlan", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIpams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIpams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Vlan = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Routes", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIpams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthIpams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Routes = append(m.Routes, &Route{})
+			if err := m.Routes[len(m.Routes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1543,6 +1873,66 @@ func (m *ListIpamInfo) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Configmap = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Vlan", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIpams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIpams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Vlan = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Routes", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIpams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthIpams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Routes = append(m.Routes, &Route{})
+			if err := m.Routes[len(m.Routes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1899,6 +2289,66 @@ func (m *ListIPAllocationInfo) Unmarshal(dAtA []byte) error {
 			}
 			m.Podname = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Vlan", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIpams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthIpams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Vlan = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Routes", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowIpams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthIpams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Routes = append(m.Routes, &Route{})
+			if err := m.Routes[len(m.Routes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipIpams(dAtA[iNdEx:])
@@ -2111,38 +2561,42 @@ func init() {
 }
 
 var fileDescriptorIpams = []byte{
-	// 513 bytes of a gzipped FileDescriptorProto
+	// 582 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x94, 0x4f, 0x6f, 0xd3, 0x30,
-	0x18, 0xc6, 0xeb, 0xa6, 0x2b, 0xed, 0x5b, 0xd8, 0x86, 0xe9, 0xb6, 0xa8, 0x4c, 0x51, 0x95, 0x53,
-	0x11, 0x52, 0x23, 0x15, 0x71, 0x99, 0xb4, 0xc3, 0x38, 0x51, 0x09, 0xa4, 0x29, 0x08, 0x89, 0xab,
-	0x9b, 0xba, 0xc1, 0xa3, 0x89, 0xbd, 0xd8, 0x05, 0xf5, 0xc6, 0xc7, 0xe2, 0x23, 0xec, 0xc8, 0x91,
-	0x03, 0x07, 0xd6, 0x4f, 0x82, 0xec, 0x38, 0x69, 0x96, 0xaa, 0x9c, 0xb8, 0xb4, 0x7d, 0x9f, 0xd7,
-	0x7f, 0x7e, 0xcf, 0x93, 0x37, 0x85, 0xd7, 0x31, 0x53, 0x9f, 0x57, 0xb3, 0x71, 0xc4, 0x93, 0xe0,
-	0x0b, 0x99, 0x33, 0xc9, 0x02, 0x26, 0x48, 0x12, 0x10, 0xc1, 0x02, 0x49, 0xb3, 0xaf, 0x2c, 0xa2,
-	0xd2, 0x28, 0xf6, 0x73, 0x2c, 0x32, 0xae, 0x38, 0x3e, 0x30, 0xc5, 0xa0, 0x1f, 0xf3, 0x98, 0x1b,
-	0x25, 0xd0, 0xbf, 0xf2, 0xa6, 0x7f, 0x03, 0xc7, 0x57, 0xd1, 0xed, 0x8a, 0x65, 0x74, 0x7a, 0x1d,
-	0xd2, 0xdb, 0x15, 0x95, 0x0a, 0xbb, 0xf0, 0x48, 0xf0, 0x79, 0x4a, 0x12, 0xea, 0xa2, 0x21, 0x1a,
-	0x75, 0xc3, 0xa2, 0xc4, 0xe7, 0xd0, 0xd5, 0xdf, 0x52, 0x90, 0x88, 0xba, 0x4d, 0xd3, 0xdb, 0x0a,
-	0xd8, 0x03, 0x88, 0x78, 0xba, 0x60, 0xf1, 0x7b, 0x22, 0xa4, 0xeb, 0x0c, 0x9d, 0x51, 0x37, 0xac,
-	0x28, 0xfe, 0x25, 0x1c, 0x56, 0xee, 0x12, 0xcb, 0x35, 0x7e, 0x09, 0x1d, 0x0d, 0xc7, 0xd2, 0x05,
-	0x37, 0x57, 0xf5, 0x26, 0x47, 0xe3, 0x1c, 0x7d, 0x2a, 0x48, 0x32, 0x4d, 0x17, 0x3c, 0x2c, 0x17,
-	0xf8, 0x37, 0xd0, 0x29, 0x54, 0x7c, 0x08, 0x4d, 0x26, 0x2c, 0x5d, 0x93, 0x09, 0x7c, 0x0a, 0x6d,
-	0xb9, 0x9a, 0xa5, 0x54, 0x59, 0x2a, 0x5b, 0x69, 0x2b, 0x31, 0x51, 0xf4, 0x1b, 0x59, 0xbb, 0x4e,
-	0x6e, 0xc5, 0x96, 0xda, 0x4a, 0x89, 0xe6, 0xb6, 0x72, 0x2b, 0xa5, 0xe0, 0x3f, 0x85, 0xa3, 0x77,
-	0x4c, 0x2a, 0x7d, 0x9f, 0x4d, 0xc5, 0xff, 0x81, 0xe0, 0x71, 0xa1, 0x19, 0x06, 0x0f, 0x20, 0x23,
-	0x69, 0x4c, 0xa5, 0x22, 0x99, 0xb2, 0x2c, 0x15, 0x05, 0x0f, 0xa0, 0x63, 0x2a, 0x9a, 0xce, 0x2d,
-	0x55, 0x59, 0x57, 0x78, 0x9d, 0x7d, 0xbc, 0xad, 0x1d, 0xde, 0x6d, 0xf4, 0x07, 0xf5, 0xe8, 0x4b,
-	0x37, 0x09, 0x11, 0x6e, 0xbb, 0xea, 0x26, 0x21, 0xc2, 0xbf, 0x80, 0x27, 0x5b, 0x37, 0x3a, 0xf7,
-	0x17, 0x90, 0x0f, 0x85, 0x8b, 0x86, 0xce, 0xa8, 0x37, 0x79, 0x66, 0x43, 0xaf, 0xda, 0x0b, 0xf3,
-	0x15, 0xfe, 0x47, 0x38, 0x33, 0xf2, 0xf5, 0xd5, 0x72, 0xc9, 0x23, 0xa2, 0x18, 0x4f, 0x8b, 0x39,
-	0x79, 0x80, 0x84, 0xfe, 0x89, 0xd4, 0xac, 0x23, 0x65, 0xd0, 0xaf, 0x1f, 0xfb, 0x9f, 0x1e, 0x6c,
-	0x65, 0x7a, 0x5b, 0x0f, 0xa6, 0xd7, 0x7f, 0x0b, 0x27, 0xbb, 0x56, 0x74, 0x1c, 0x01, 0xb4, 0xec,
-	0x08, 0xea, 0x34, 0x9e, 0x57, 0xd3, 0xa8, 0xf1, 0x85, 0x66, 0xe1, 0xe4, 0x37, 0x82, 0x9e, 0x0e,
-	0xea, 0x43, 0xfe, 0xd6, 0xe1, 0x4b, 0xe8, 0x96, 0x93, 0x8d, 0xcf, 0xec, 0xfe, 0xfa, 0x7b, 0x35,
-	0x38, 0xd9, 0x6d, 0x88, 0xe5, 0xda, 0x6f, 0xe0, 0x0b, 0xe8, 0x14, 0xd1, 0xe3, 0xd3, 0xda, 0xb3,
-	0x28, 0x36, 0xf7, 0x77, 0xf4, 0x7c, 0x6f, 0x08, 0xc7, 0x75, 0x50, 0xec, 0xed, 0x71, 0x50, 0x9c,
-	0x75, 0xbe, 0xb7, 0x6f, 0xce, 0x7c, 0xe3, 0xde, 0xdd, 0x7b, 0x8d, 0x5f, 0xf7, 0x5e, 0xe3, 0xfb,
-	0xc6, 0x43, 0x77, 0x1b, 0x0f, 0xfd, 0xdc, 0x78, 0xe8, 0xcf, 0xc6, 0x43, 0x9f, 0x1a, 0xb3, 0xb6,
-	0xf9, 0xdf, 0x78, 0xf5, 0x37, 0x00, 0x00, 0xff, 0xff, 0xf5, 0xbe, 0xa7, 0x24, 0x8d, 0x04, 0x00,
-	0x00,
+	0x18, 0xc6, 0xeb, 0xa6, 0xed, 0xda, 0xb7, 0x63, 0x2b, 0xa6, 0xdb, 0xa2, 0x32, 0x45, 0x55, 0xc4,
+	0xa1, 0x13, 0x52, 0x23, 0x15, 0x71, 0x99, 0xb4, 0xc3, 0x38, 0x51, 0x09, 0xa4, 0x29, 0x08, 0x89,
+	0xab, 0x9b, 0xba, 0xc1, 0xd0, 0xc4, 0x5e, 0x92, 0xae, 0xea, 0x8d, 0x0f, 0xc3, 0x91, 0x0f, 0xb2,
+	0x23, 0x47, 0x0e, 0x1c, 0x58, 0x3f, 0x02, 0x9f, 0x00, 0xd9, 0x71, 0xd2, 0x2c, 0xa5, 0x3b, 0x20,
+	0x2e, 0xad, 0xdf, 0xe7, 0xf5, 0xeb, 0xbc, 0xbf, 0xc7, 0x7f, 0xe0, 0xa5, 0xcf, 0x92, 0x8f, 0x8b,
+	0xc9, 0xd0, 0xe3, 0x81, 0xf3, 0x99, 0x4c, 0x59, 0xcc, 0x1c, 0x26, 0x48, 0xe0, 0x10, 0xc1, 0x9c,
+	0x98, 0x46, 0x37, 0xcc, 0xa3, 0xb1, 0x52, 0xf4, 0xef, 0x50, 0x44, 0x3c, 0xe1, 0xb8, 0xae, 0x82,
+	0x5e, 0xd7, 0xe7, 0x3e, 0x57, 0x8a, 0x23, 0x47, 0x69, 0xd2, 0xfe, 0x04, 0x9d, 0x4b, 0xef, 0x7a,
+	0xc1, 0x22, 0x3a, 0xbe, 0x72, 0xe9, 0xf5, 0x82, 0xc6, 0x09, 0x36, 0x61, 0x4f, 0xf0, 0x69, 0x48,
+	0x02, 0x6a, 0xa2, 0x3e, 0x1a, 0xb4, 0xdc, 0x2c, 0xc4, 0xa7, 0xd0, 0x92, 0xff, 0xb1, 0x20, 0x1e,
+	0x35, 0xab, 0x2a, 0xb7, 0x11, 0xb0, 0x05, 0xe0, 0xf1, 0x70, 0xc6, 0xfc, 0xb7, 0x44, 0xc4, 0xa6,
+	0xd1, 0x37, 0x06, 0x2d, 0xb7, 0xa0, 0xd8, 0x17, 0x70, 0x50, 0xf8, 0x96, 0x98, 0xaf, 0xf0, 0x73,
+	0x68, 0xca, 0xe6, 0x58, 0x38, 0xe3, 0xea, 0x53, 0xed, 0xd1, 0xe1, 0x30, 0x6d, 0x7d, 0x2c, 0x48,
+	0x30, 0x0e, 0x67, 0xdc, 0xcd, 0x27, 0xd8, 0x67, 0x50, 0x77, 0xf9, 0x22, 0xa1, 0xb8, 0x03, 0xc6,
+	0x34, 0x4e, 0x74, 0x6f, 0x72, 0x88, 0x0f, 0xa0, 0xea, 0x2f, 0x75, 0x43, 0x55, 0x7f, 0x69, 0x7f,
+	0x45, 0xd0, 0xcc, 0x56, 0x90, 0x49, 0x26, 0xf4, 0xec, 0x2a, 0x13, 0xf8, 0x18, 0x1a, 0xf1, 0x62,
+	0x12, 0xd2, 0x44, 0x17, 0xe8, 0x48, 0x62, 0xfb, 0x24, 0xa1, 0x4b, 0xb2, 0x32, 0x8d, 0x14, 0x5b,
+	0x87, 0x12, 0x3b, 0xc7, 0x30, 0x6b, 0x29, 0x76, 0x2e, 0x60, 0x0c, 0xb5, 0x9b, 0x39, 0x09, 0xcd,
+	0xba, 0x4a, 0xa8, 0x31, 0x7e, 0x06, 0x8d, 0x48, 0xf6, 0x1a, 0x9b, 0x8d, 0xbe, 0x31, 0x68, 0x8f,
+	0xf6, 0x35, 0x96, 0x02, 0x70, 0x75, 0xce, 0x7e, 0x0c, 0x87, 0x6f, 0x58, 0x9c, 0xc8, 0x4e, 0xb5,
+	0xf7, 0xf6, 0x6f, 0x04, 0xfb, 0x99, 0xa6, 0xba, 0xb7, 0x00, 0x22, 0x12, 0xfa, 0x34, 0x4e, 0x48,
+	0x94, 0x31, 0x17, 0x14, 0xdc, 0x83, 0xa6, 0x8a, 0x68, 0x38, 0xd5, 0x3c, 0x79, 0x5c, 0x20, 0x35,
+	0x76, 0x91, 0xd6, 0xb6, 0x48, 0x37, 0x1b, 0x5c, 0x2f, 0x6f, 0x70, 0xee, 0x43, 0x40, 0x84, 0xd9,
+	0x28, 0xfa, 0x10, 0x14, 0x7c, 0xd8, 0xfb, 0xab, 0x0f, 0xcd, 0x07, 0x7c, 0x38, 0x87, 0x47, 0x1b,
+	0x1f, 0xe4, 0xb9, 0x38, 0x83, 0xf4, 0xd0, 0x9a, 0x48, 0x55, 0x3d, 0xd1, 0x55, 0x45, 0x63, 0xdc,
+	0x74, 0x86, 0xfd, 0x1e, 0x4e, 0x94, 0x7c, 0x75, 0x39, 0x9f, 0x73, 0x8f, 0x24, 0x8c, 0x87, 0xd9,
+	0x39, 0xbe, 0x07, 0x83, 0x1e, 0x84, 0xa9, 0x96, 0x60, 0xec, 0x6f, 0x08, 0xba, 0xe5, 0x75, 0xff,
+	0xd3, 0x69, 0x2a, 0x5c, 0xaf, 0xda, 0xfd, 0xeb, 0xf5, 0xef, 0x27, 0xe9, 0x35, 0x1c, 0x6d, 0xbb,
+	0x20, 0x9d, 0x74, 0xa0, 0xa6, 0x6f, 0x97, 0x2c, 0x7e, 0x5a, 0x34, 0xb2, 0x44, 0xe6, 0xaa, 0x89,
+	0xa3, 0x9f, 0x08, 0xda, 0xd2, 0xe3, 0x77, 0xe9, 0x83, 0x82, 0x2f, 0xa0, 0x95, 0x5f, 0x5a, 0x7c,
+	0xa2, 0xeb, 0xcb, 0x4f, 0x46, 0xef, 0x68, 0x3b, 0x21, 0xe6, 0x2b, 0xbb, 0x82, 0xcf, 0xa1, 0x99,
+	0xed, 0x1a, 0x3e, 0x2e, 0x6d, 0x63, 0x56, 0xdc, 0xdd, 0xd2, 0xd3, 0x5a, 0x17, 0x3a, 0xe5, 0x46,
+	0xb1, 0xb5, 0x83, 0x20, 0x5b, 0xeb, 0x74, 0x67, 0x5e, 0xad, 0xf9, 0xca, 0xbc, 0xbd, 0xb3, 0x2a,
+	0x3f, 0xee, 0xac, 0xca, 0x97, 0xb5, 0x85, 0x6e, 0xd7, 0x16, 0xfa, 0xbe, 0xb6, 0xd0, 0xaf, 0xb5,
+	0x85, 0x3e, 0x54, 0x26, 0x0d, 0xf5, 0x24, 0xbe, 0xf8, 0x13, 0x00, 0x00, 0xff, 0xff, 0xf6, 0x35,
+	0x1d, 0x6e, 0x68, 0x05, 0x00, 0x00,
 }

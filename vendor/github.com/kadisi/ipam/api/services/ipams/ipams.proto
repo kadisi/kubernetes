@@ -25,11 +25,17 @@ message AcquireIPReply {
   IpamInfo ipaminfo = 1;
 }
 
+message Route {
+  string dst = 1;
+  string gw = 2;
+}
 message IpamInfo {
   string ip = 1;
   string subnet = 2; 
   string gateway = 3;
   string configMap = 4;
+  string vlan = 5;
+  repeated Route routes = 6;
 }
 
 message ListIpamRequest {
@@ -43,6 +49,8 @@ message ListIpamInfo {
   string gateway = 4;
   string namespace = 5;
   string configmap = 6;
+  string vlan = 7;
+  repeated Route routes = 8;
 }
 
 message ListIpamReply {
@@ -59,6 +67,8 @@ message ListIPAllocationInfo {
   string subnet = 2;
   string gateway = 3;
   string podname = 4;
+  string vlan = 5;
+  repeated Route routes = 6;
 }
 
 message ListIPAllocationReply {

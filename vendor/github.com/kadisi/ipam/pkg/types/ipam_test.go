@@ -78,12 +78,12 @@ func TestIpam_GetKey(t *testing.T) {
 }
 
 func TestNewIpam(t *testing.T) {
-
-	cases := []struct {
+	type testCase1 struct {
 		Name string
 		CM   *v1.ConfigMap
 		Get  bool
-	}{
+	}
+	cases := []testCase1{
 		{
 			Name: "success",
 			CM: &v1.ConfigMap{
@@ -124,6 +124,81 @@ func TestNewIpam(t *testing.T) {
 			}
 		})
 	}
+
+	// vlan
+	func() {
+		c := testCase1{
+			Name: "no-vlan-success",
+			CM: &v1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "default",
+					Name:      "test1",
+				},
+				Data: map[string]string{
+					ConfigMapFloatingIPKey: `{"range":{"rangeStart":"192.168.10.10",` +
+						`"rangeEnd":"192.168.10.20","subnet":` +
+						`"192.168.10.0/24","gateway":"192.168.10.1"}}`,
+				},
+			},
+			Get: true,
+		}
+
+		t.Run(c.Name, func(t *testing.T) {
+			a, ok := NewIpam(c.CM)
+			if ok != c.Get {
+				t.Errorf("expect %v while %v", c.Get, ok)
+			}
+
+			if a.Range.Vlan != NOVlanStr {
+				t.Errorf("expect get vlan %v now %v", NOVlanStr, a.Range.Vlan)
+			}
+		})
+	}()
+
+	// routes
+	func() {
+		c := testCase1{
+			Name: "route-success",
+			CM: &v1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "default",
+					Name:      "test1",
+				},
+				Data: map[string]string{
+					ConfigMapFloatingIPKey: `{"range":{"rangeStart":"192.168.10.10",` +
+						`"rangeEnd":"192.168.10.20","subnet":` +
+						`"192.168.10.0/24","gateway":"192.168.10.1"},` +
+						`"routes":[ {"dst": "192.168.0.0/16", "gw": "10.10.5.1"}]}`,
+				},
+			},
+			Get: true,
+		}
+
+		t.Run(c.Name, func(t *testing.T) {
+			a, ok := NewIpam(c.CM)
+			if ok != c.Get {
+				t.Errorf("expect %v while %v", c.Get, ok)
+			}
+
+			if a.Routes == nil {
+				t.Errorf("can not get route info ")
+			}
+
+			if len(a.Routes) != 1 {
+				t.Errorf("len of Routes != 1")
+			}
+
+			if a.Routes[0].Dst.String() != "192.168.0.0/16" {
+				t.Errorf("get routes dst error")
+			}
+
+			if a.Routes[0].Gw.String() != "10.10.5.1" {
+				t.Errorf("get routes gw error")
+			}
+		})
+
+	}()
+
 }
 
 const (

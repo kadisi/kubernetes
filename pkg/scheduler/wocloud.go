@@ -15,6 +15,7 @@ package scheduler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -52,6 +53,10 @@ const (
 	AnnotationPodGateway = ipamtypes.AnnotationPodGateway
 	// AnnotationPodConfigMap is in pod annotation
 	AnnotationPodConfigMap = ipamtypes.AnnotationPodConfigMap
+
+	AnnotationPodRoutes = ipamtypes.AnnotationPodRoutes
+
+	AnnotationPodVlan = ipamtypes.AnnotationPodVlan
 )
 
 type Ipamer interface {
@@ -115,16 +120,21 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 		return fmt.Errorf("rpc client acquireip error %v", err)
 	}
 
-	addAnnotationPatch := func(ip, subnet, gw, cm string) []byte {
-		return []byte(fmt.Sprintf(`{"metadata":{"annotations":{"%s":"%s","%s":"%s","%s":"%s","%s":"%s"}}}`,
+	addAnnotationPatch := func(ip, subnet, gw, cm, vlan, routes string) []byte {
+		return []byte(fmt.Sprintf(`{"metadata":{"annotations":{"%s":"%s","%s":"%s","%s":"%s","%s":"%s","%s":"%s", "%s":"%s"}}}`,
 			AnnotationPodFloatingIP, ip,
 			AnnotationPodSubnet, subnet,
 			AnnotationPodGateway, gw,
-			AnnotationPodConfigMap, cm))
+			AnnotationPodConfigMap, cm,
+			AnnotationPodVlan, vlan,
+			AnnotationPodRoutes, routes))
 	}
-
+	routes, err := json.Marshal(respon.Ipaminfo.Routes)
+	if err != nil {
+		return err
+	}
 	_, err = c.Client.CoreV1().Pods(pod.GetNamespace()).Patch(pod.Name, types.MergePatchType, addAnnotationPatch(
-		respon.Ipaminfo.Ip, respon.Ipaminfo.Subnet, respon.Ipaminfo.Gateway, respon.Ipaminfo.ConfigMap))
+		respon.Ipaminfo.Ip, respon.Ipaminfo.Subnet, respon.Ipaminfo.Gateway, respon.Ipaminfo.ConfigMap, respon.Ipaminfo.Vlan, string(routes)))
 	if err != nil {
 		glog.V(3).Infof("patch pod annotation for floatingip error %v", err)
 		return err

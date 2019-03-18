@@ -47,12 +47,13 @@ func TestWithIPAllocationSubnet(t *testing.T) {
 }
 
 func TestNewIPAllocation(t *testing.T) {
-
-	tables := []struct {
+	type testcase struct {
 		Name string
 		Pod  *v1.Pod
 		Get  bool
-	}{
+	}
+
+	tables := []testcase{
 		{
 			Name: "success",
 			Pod: &v1.Pod{
@@ -142,6 +143,70 @@ func TestNewIPAllocation(t *testing.T) {
 			}
 		})
 	}
+	// test vlan
+	func() {
+		c := testcase{
+			Name: "test vlan",
+			Pod: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod1",
+					Namespace: "default",
+					Annotations: map[string]string{
+						AnnotationPodFloatingIP: "192.168.10.11",
+						AnnotationPodConfigMap:  "floatingip",
+						AnnotationPodSubnet:     "192.168.10.0/24",
+						AnnotationPodGateway:    "192.168.10.1",
+					},
+				},
+			},
+			Get: true,
+		}
+		t.Run(c.Name, func(t *testing.T) {
+			a, ok := NewIPAllocation(c.Pod)
+			if ok != c.Get {
+				t.Errorf("must be %v while get %v", c.Get, ok)
+			}
+
+			if a.Vlan != NOVlanStr {
+				t.Errorf("need get vlan %v while get %v", NOVlanStr, a.Vlan)
+			}
+		})
+	}()
+	// test route
+	func() {
+		c := testcase{
+			Name: "test route",
+			Pod: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod1",
+					Namespace: "default",
+					Annotations: map[string]string{
+						AnnotationPodFloatingIP: "192.168.10.11",
+						AnnotationPodConfigMap:  "floatingip",
+						AnnotationPodSubnet:     "192.168.10.0/24",
+						AnnotationPodGateway:    "192.168.10.1",
+						AnnotationPodRoutes:     `[{"dst":"192.168.10.10/24","gw":"192.168.10.1"}]`,
+					},
+				},
+			},
+			Get: true,
+		}
+		t.Run(c.Name, func(t *testing.T) {
+			a, ok := NewIPAllocation(c.Pod)
+			if ok != c.Get {
+				t.Errorf("must be %v while get %v", c.Get, ok)
+			}
+
+			if a.Routes == nil {
+				t.Errorf("need get routes")
+			}
+
+			if Cmp(a.Routes[0].Gw, net.IPv4(192, 168, 10, 1)) != 0 {
+				t.Errorf("get wrong gw")
+			}
+
+		})
+	}()
 }
 func TestNewIPAllocationSet(t *testing.T) {
 
