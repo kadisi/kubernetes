@@ -155,6 +155,7 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 		glog.V(3).Infof("marshal annotation error %v", err)
 		return err
 	}
+	glog.V(3).Infof("marshal annotation %v", string(mergeannotation))
 	_, err = c.Client.CoreV1().Pods(pod.GetNamespace()).Patch(pod.Name, types.MergePatchType, mergeannotation)
 	if err != nil {
 		glog.V(3).Infof("patch pod annotation for floatingip error %v mergeannotation %v", err, string(mergeannotation))
