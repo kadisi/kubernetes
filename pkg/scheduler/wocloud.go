@@ -120,16 +120,17 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 		return fmt.Errorf("rpc client acquireip error %v", err)
 	}
 
+	type Metadata struct {
+		annotations map[string]string `json:"annotations"`
+	}
+
+	type Merge struct {
+		metadata Metadata `json:"metadata"`
+	}
+
 	addAnnotationPatch := func(ip, subnet, gw, cm, vlan, routes string) ([]byte, error) {
 
-		type Metadata struct {
-			annotations map[string]string `json:"annotations"`
-		}
-		type mergedata struct {
-			metadata Metadata `json:"metadata"`
-		}
 		annotation := make(map[string]string)
-
 		annotation[AnnotationPodFloatingIP] = ip
 		annotation[AnnotationPodSubnet] = subnet
 		annotation[AnnotationPodGateway] = gw
@@ -137,7 +138,7 @@ func (c *WoclouderClient) AssiginFloattingIP(pod *v1.Pod) error {
 		annotation[AnnotationPodVlan] = vlan
 		annotation[AnnotationPodRoutes] = routes
 
-		mergepod := &mergedata{
+		mergepod := &Merge{
 			metadata: Metadata{annotations: annotation},
 		}
 
