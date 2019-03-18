@@ -117,8 +117,7 @@ type Range struct {
 
 // Route is route for ipallocation and ipam
 type Route struct {
-	Dst IPNet  `json:"dst"`
-	Gw  net.IP `json:"gw"`
+	Dst IPNet `json:"dst"`
 }
 
 // TODO need add route struct

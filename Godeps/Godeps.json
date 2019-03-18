@@ -22,13 +22,13 @@
 		},
 		{
 			"ImportPath": "github.com/kadisi/ipam/api/services/ipams",
-			"Comment": "cli show routes",
-			"Rev": "611facfb900cce5471c6f3753dc262d80e73f5fb"
+			"Comment": "delete route gw",
+			"Rev": "0207db5c550124590dd55f15fbc0f41c8c2093d5"
 		},
 		{
 			"ImportPath": "github.com/kadisi/ipam/pkg/types",
-			"Comment": "cli show routes",
-			"Rev": "611facfb900cce5471c6f3753dc262d80e73f5fb"
+			"Comment": "delete route gw",
+			"Rev": "0207db5c550124590dd55f15fbc0f41c8c2093d5"
 		},
 		{
 			"ImportPath": "bitbucket.org/ww/goautoneg",

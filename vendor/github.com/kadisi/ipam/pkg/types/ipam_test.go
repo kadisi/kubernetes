@@ -168,7 +168,7 @@ func TestNewIpam(t *testing.T) {
 					ConfigMapFloatingIPKey: `{"range":{"rangeStart":"192.168.10.10",` +
 						`"rangeEnd":"192.168.10.20","subnet":` +
 						`"192.168.10.0/24","gateway":"192.168.10.1"},` +
-						`"routes":[ {"dst": "192.168.0.0/16", "gw": "10.10.5.1"}]}`,
+						`"routes":[ {"dst": "192.168.0.0/16"}]}`,
 				},
 			},
 			Get: true,
@@ -192,9 +192,6 @@ func TestNewIpam(t *testing.T) {
 				t.Errorf("get routes dst error")
 			}
 
-			if a.Routes[0].Gw.String() != "10.10.5.1" {
-				t.Errorf("get routes gw error")
-			}
 		})
 
 	}()

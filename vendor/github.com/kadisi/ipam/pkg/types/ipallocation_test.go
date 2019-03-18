@@ -185,7 +185,7 @@ func TestNewIPAllocation(t *testing.T) {
 						AnnotationPodConfigMap:  "floatingip",
 						AnnotationPodSubnet:     "192.168.10.0/24",
 						AnnotationPodGateway:    "192.168.10.1",
-						AnnotationPodRoutes:     `[{"dst":"192.168.10.10/24","gw":"192.168.10.1"}]`,
+						AnnotationPodRoutes:     `[{"dst":"192.168.10.10/24"}]`,
 					},
 				},
 			},
@@ -199,10 +199,6 @@ func TestNewIPAllocation(t *testing.T) {
 
 			if a.Routes == nil {
 				t.Errorf("need get routes")
-			}
-
-			if Cmp(a.Routes[0].Gw, net.IPv4(192, 168, 10, 1)) != 0 {
-				t.Errorf("get wrong gw")
 			}
 
 		})

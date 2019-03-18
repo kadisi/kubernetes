@@ -27,7 +27,6 @@ message AcquireIPReply {
 
 message Route {
   string dst = 1;
-  string gw = 2;
 }
 message IpamInfo {
   string ip = 1;
